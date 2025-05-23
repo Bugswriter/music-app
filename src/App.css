@@ -8,3 +8,29 @@
 button {
   margin: 10px;
 }
+
+#playerContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+ 
+#player {
+  display: none;
+}
+
+#albumArt {
+  width: 150px;     /* or any square size you like */
+  height: 150px;
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: middle; /* aligns with other inline elements */
+}
+
+#albumArt img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}

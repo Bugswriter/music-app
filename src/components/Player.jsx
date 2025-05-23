@@ -3,20 +3,33 @@ import { useEffect, useRef, useState } from "react";
 function Player () {
     const player = useRef(null);
     const playerRef = useRef(null);
-    const [songID, setSongID] = useState("5vWhWaE3lTA");
+
+    const [songTitle, setSongTitle] = useState(null);
+    const [albumArt, setAlbumArt] = useState(null);
+
+    const isVideoLoadingOrPlaying = (state) => {
+    return state === window.YT.PlayerState.PLAYING ||
+           state === window.YT.PlayerState.BUFFERING ||
+           state === window.YT.PlayerState.CUED;
+    };
 
     useEffect(() => {
         const createPlayer = () => {
             const playerOptions = {
                 height: '360',
                 width: '640',
-                videoId: songID,
+                playerVars: {
+                    listType: 'playlist',
+                    list: 'PLaURZdHjgul2nX_sKY4tI4rfGztBKpIh8',
+                },
                 events: {
                     onReady: (event) => {
-                        console.log('Player is ready');
+                        setSongInfo();
                     },
                     onStateChange: (event) => {
-                        console.log('State changed:', event.data);
+                        if (isVideoLoadingOrPlaying(event.data)){
+                            setSongInfo();
+                        }
                     },
                 },
             };
@@ -25,11 +38,19 @@ function Player () {
             }
         }
         if (window.YT && window.YT.Player) {
-            window.onYouTubeIframeAPIReady();
+            createPlayer();
         }else {
             setTimeout(createPlayer(), 100);
         }
-    }, [songID]);
+    }, []);
+
+    const setSongInfo = () => {
+        const songInfo = player.current.getVideoData();
+        setSongTitle(songInfo.title);
+        const albumArtURL = `https://img.youtube.com/vi/${songInfo.video_id}/mqdefault.jpg`;
+        setAlbumArt(albumArtURL);
+
+    }
 
     const toggleSong = () => {
         const currentState = player.current.getPlayerState();
@@ -43,18 +64,27 @@ function Player () {
         }
     }
 
+    const playPrev = () => {
+        player.current.previousVideo();
+    }
+
+    const playNext = () => {
+        player.current.nextVideo();
+    }
+
     return (
-        <>
-            <h2>Groove</h2>
+        <div id="playerContainer">
             <div id="player" ref={playerRef}></div>
-            <div id="controls">
-                <input type="text" name="song_id" />
-                <button onClick={toggleSong}>play / pause</button>
-                <button>next</button><button>prev</button>
-                <button>vol-</button><button>vol+</button>
-                <button>loop</button>
+            <div id="albumArt">
+                <img src={albumArt} alt="Album Art" />
             </div>
-        </>
+            <h4>{songTitle}</h4>
+            <div id="controls">
+                <button onClick={playPrev}>prev</button>
+                <button onClick={toggleSong}>play / pause</button>
+                <button onClick={playNext}>next</button>
+            </div>
+        </div>
     )
 }
 
